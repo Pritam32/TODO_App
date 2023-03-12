@@ -1,20 +1,23 @@
-import { View, Text,TouchableOpacity,FlatList, Button,ScrollView,Alert,Image} from 'react-native';
+import { View, Text,TouchableOpacity,FlatList, Button,ScrollView,Alert,Image,LogBox} from 'react-native';
 import React,{useState,useEffect} from 'react';
 import {TextInput } from 'react-native-gesture-handler';
-import firestore from '@react-native-firebase/firestore';
+import firestore, { firebase } from '@react-native-firebase/firestore';
 import Checkbox from './Components/Checkbox';
 import Form from './Form';
+import auth from '@react-native-firebase/auth';
 
-
+LogBox.ignoreAllLogs()
 const Home = ({route,navigation}) => {
 
-  const [list,setList]=useState([{"color": {"Color": "Green"}, "date":{"date":"11/8/2022"}, "id": undefined, "title": {"title": "Welcome to Pritam's App"}},]);
+  const [list,setList]=useState([]);
   
-  const ref=firestore().collection('todos');
+  
+  const ref=firestore().collection('users').doc(auth().currentUser.uid).collection('todos');
 
 
 
     useEffect(()=>{
+      
       return ref.orderBy('time','asc').onSnapshot(querySnapshot=>{
         const list=[]
         querySnapshot.forEach(doc=>{
@@ -31,9 +34,9 @@ const Home = ({route,navigation}) => {
       })
     },[])
 
-    const deleteTODO=(todos)=>{
+    const deleteTODO=({item})=>{
       
-      firestore().collection("todos").doc(list[0].id).delete().then(
+      ref.doc(item.id).delete().then(
         Alert.alert("Success"," Task Deleted Successfully !")
       )
       
@@ -63,7 +66,7 @@ const Home = ({route,navigation}) => {
             <Text style={{fontSize:16,color:"white",marginTop:25}}>{"Added On: "+item.date.date}</Text>  
             </View>    
             <Checkbox/>
-            <TouchableOpacity onPress={deleteTODO}>
+            <TouchableOpacity onPress={()=>deleteTODO({item})}>
             <Image source={{uri:"https://media.istockphoto.com/vectors/paper-cut-trash-can-icon-isolated-on-blue-background-garbage-bin-sign-vector-id1224149023?k=20&m=1224149023&s=170667a&w=0&h=0IaKZGIPVahuRJRST46jI4Fz46tKfyphTkJGzBxhfDU="}}
     style={{width:50,height:50,marginLeft:10,marginTop:10}}/>
             </TouchableOpacity>

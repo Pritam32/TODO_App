@@ -3,7 +3,7 @@ import React,{useEffect, useState} from 'react';
 import { TextInput } from 'react-native-gesture-handler';
 import Home from './Home';
 import firestore, { firebase } from '@react-native-firebase/firestore';
-
+import auth from '@react-native-firebase/auth';
 
 const Form = ({navigation,route}) => {
     const [title,setTitle]=useState("");
@@ -21,9 +21,10 @@ const Form = ({navigation,route}) => {
        var finalObject = date1 + '/' + month + '/' + year ;
     
     const [date,setdate]=useState(finalObject);
-       
+      
+  
     
-    const ref=firestore().collection('todos');
+    const ref=firestore().collection('users').doc(auth().currentUser.uid).collection('todos');
     
     
    
@@ -32,21 +33,24 @@ const Form = ({navigation,route}) => {
       
         if(title.length==0){
           Alert.alert("Invalid Input","Please enter the title !");
-          return
+          
             }
-        await ref.add({
-            title:{title},
-            date:{date},
-            time:firestore.Timestamp.fromDate(new Date()),
+            else{
+              await ref.add({
+                title:{title},
+                date:{date},
+                time:firestore.Timestamp.fromDate(new Date()),
+                
+            }).then(
+                setTitle(""),
+                setdate(""),
+               
+                navigation.navigate("Home")
+                )   
             
-        }).then(
-            setTitle(""),
-            setdate(""),
-           
-            navigation.navigate("Home",list)
-            )   
-        
-
+    
+            }
+       
         }
     
   
